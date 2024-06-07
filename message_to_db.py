@@ -128,7 +128,7 @@ Base.metadata.create_all(engine) # add new table
 
 # Add all json files in the given directory to the table
 print("\nAdded the following json files as new rows in the messages table:")
-json_files_dir = '/Users/thomasdefauw/Downloads'
+json_files_dir = 'sample_messages'
 for _, __, files in os.walk(json_files_dir):
     for file in files:
         if file.endswith(".json"):
