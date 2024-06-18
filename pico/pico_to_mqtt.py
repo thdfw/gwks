@@ -2,7 +2,8 @@
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the hall sensor.
 Instructions: 
-- In Terminal, run "mosquitto" to get the broker running
+- Place the provided .conf file in /opt/homebrew/etc/mosquitto/, or similar
+- In Terminal, run "/opt/homebrew/opt/mosquitto/sbin/mosquitto -c /opt/homebrew/etc/mosquitto/mosquitto.conf"
 - In Thonny, run this code
 - Save the data to a CSV by running mqtt_to_csv.py
 """
