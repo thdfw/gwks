@@ -1,7 +1,8 @@
 """
 This code reads MQTT messages on a given topic and saves them as rows in a CSV file.
 Instructions: 
-- In Terminal, run "mosquitto" to get the broker running
+- Place the provided .conf file in /opt/homebrew/etc/mosquitto/, or similar
+- In Terminal, run "/opt/homebrew/opt/mosquitto/sbin/mosquitto -c /opt/homebrew/etc/mosquitto/mosquitto.conf"
 - In Thonny, run the code that publishes messages to the topic
 - Run this code
 """
