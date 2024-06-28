@@ -1,10 +1,10 @@
 """
 This code reads MQTT messages on a given topic and saves them as rows in a CSV file.
 Instructions: 
-- Place the provided .conf file in /opt/homebrew/etc/mosquitto/, or similar
-- In Terminal, run "/opt/homebrew/opt/mosquitto/sbin/mosquitto -c /opt/homebrew/etc/mosquitto/mosquitto.conf"
-- In Thonny, run the code that publishes messages to the topic
-- Run this code
+- If using mosquitto 2.0, place the provided .conf file in /etc/mosquitto/, or similar
+- In Terminal, run "mosquitto -c /etc/mosquitto/mosquitto.conf"
+- Run this code on the Pico W (either call it main.py or through Thonny)
+- Run this code to save the data to a CSV file live
 """
 
 import csv
@@ -12,30 +12,37 @@ import paho.mqtt.client as mqtt
 from datetime import datetime 
 import os 
 
-# MQTT info
+# *********************************************
+# PARAMETERS
+# *********************************************
+
 mqtt_broker = "localhost"
 mqtt_port = 1883
 mqtt_topic = "hall_sensor"
 
-# CSV file name is topic and time
-now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-csv_file = os.getcwd() + f"/mqtt_files/{mqtt_topic}_{now}.csv"
+# Directory to save the CSV files
+directory = os.getcwd() + '/mqtt_files/'
 
-# Callback functions 
+# *********************************************
+# Writing received MQTT messages to a CSV file
+# *********************************************
+
+now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+csv_file = directory + f"{mqtt_topic}_{now}.csv"
+
 def on_connect(client, userdata, flags, rc):
+    '''Connect and subscribes to the given MQTT topic'''
     print(f"Connected and subscribed to {mqtt_topic}")
     client.subscribe(mqtt_topic)
 
 def on_message(client, userdata, message):
+    '''Writes the data received on the MQTT topic to the CSV'''
     data = message.payload.decode()
     print(f"Received data: {data}")
-
-    # Write to CSV file
     with open(csv_file, mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([data])
 
-# MQTT client setup
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
