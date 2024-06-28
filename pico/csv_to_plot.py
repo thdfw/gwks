@@ -7,8 +7,6 @@ import csv
 from scipy.signal import butter, filtfilt
 import os
 
-# This is working
-
 # Define the low pass filter
 cutoff_freq = 0.17
 sampling_freq = 4.10
