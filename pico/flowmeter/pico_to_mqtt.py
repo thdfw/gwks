@@ -26,6 +26,7 @@ mqtt_broker = "192.168.0.89"
 mqtt_username = ""
 mqtt_password = ""
 
+
 mqtt_port = 1883
 mqtt_topic = b"hall_sensor"
 
