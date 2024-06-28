@@ -2,10 +2,10 @@
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the hall sensor.
 Instructions: 
-- Place the provided .conf file in /opt/homebrew/etc/mosquitto/, or similar
-- In Terminal, run "/opt/homebrew/opt/mosquitto/sbin/mosquitto -c /opt/homebrew/etc/mosquitto/mosquitto.conf"
-- In Thonny, run this code
-- Save the data to a CSV by running mqtt_to_csv.py
+- If using mosquitto 2.0, place the provided .conf file in /etc/mosquitto/, or similar
+- In Terminal, run "mosquitto -c /etc/mosquitto/mosquitto.conf"
+- Run this code on the Pico W (either call it main.py or through Thonny)
+- Save the data to a CSV file live by running mqtt_to_csv.py
 """
 
 import machine
@@ -15,19 +15,26 @@ from umqtt.simple import MQTTClient
 import time
 
 # *********************************************
-# MQTT connection
+# PARAMETERS
 # *********************************************
 
 wifi_name = "lbnl-visitor"
 wifi_password = ""
 
 mqtt_broker = "198.128.196.115"
+mqtt_username = ""
+mqtt_password = ""
+
 mqtt_port = 1883
 mqtt_topic = b"hall_sensor"
 
-wifi_name = "602"
-wifi_password = "F=ma1686"
-mqtt_broker = "192.168.86.79"
+client_name = "pico_w"
+
+HALL_PULSE_PIN = 28
+
+# *********************************************
+# Connecting to WiFi and MQTT broker
+# *********************************************
 
 # Connect to wifi
 wlan = network.WLAN(network.STA_IF)
@@ -40,15 +47,14 @@ if not wlan.isconnected():
 print(f"Connected to wifi {wifi_name}")
 
 # Connect to MQTT broker
-client = MQTTClient("thomas_pico_w_client", mqtt_broker, port=mqtt_port)
+client = MQTTClient(client_name, mqtt_broker, user=mqtt_username, password=mqtt_password, port=mqtt_port)
 client.connect()
-print(f"Connected to mqtt broker {mqtt_broker}")
+print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
 
 # *********************************************
-# Flow meter
+# Reading timestamps
 # *********************************************
 
-HALL_PULSE_PIN = 15
 timestamps = []
 
 # Callback function to record the timestamp of each pulse
