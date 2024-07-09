@@ -8,5 +8,8 @@ import ubinascii
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 
+# Uncomment when running directly in Thonny
+# print(pico_unique_id) 
+
 def info():
     print(pico_unique_id)
