@@ -22,17 +22,16 @@ Install the `umqtt.simple` package on the Pico:
 - If necessary, install Mosquitto on the device
 - If necessary\*, edit the configuration file `mosquitto.conf`, generally located in /etc/mosquitto/
 - Start mosquitto (with the configuration file): `mosquitto` (`mosquitto -c path/to/mosquitto.conf`)
+- If you encounter "Error: Address already in use" and are using Mosquitto>=2.0, run `sudo systemctl stop mosquitto.service` and try again.
 
-The command line should look like this:
-![](examples/images/starting_mosquitto.png)
-
-\* When using Mosquitto>=2.0, running `mosquitto` without the configuration file will only allow for local connections, which is not what we want. Make sure to uncommment/add the following lines to the configuration file: 
+\*When using Mosquitto>=2.0, running `mosquitto` will only allow for connections from clients running on this machine. Make sure to uncommment/add the following lines to the configuration file and start mosquitto with the configuration file to allow remote access.
 ```
 allow_anonymous true
 listener 1883 0.0.0.0
 ```
 
-If you encounter "Error: Address already in use" and are using Mosquitto>=2.0, run `sudo systemctl stop mosquitto.service` and try again.
+The command line should look like this:
+![](examples/images/starting_mosquitto.png)
 
 ### Connect the Pico to the WiFi and MQTT broker, and publish messages
 
