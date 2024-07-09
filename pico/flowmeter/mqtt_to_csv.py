@@ -3,7 +3,7 @@ This code reads MQTT messages on a given topic and saves them as rows in a CSV f
 Instructions: 
 - If using mosquitto 2.0, place the provided .conf file in /etc/mosquitto/, or similar
 - In Terminal, run "mosquitto -c /etc/mosquitto/mosquitto.conf"
-- Run this code on the Pico W (either call it main.py or through Thonny)
+- Run pico_to_mqtt.py on the Pico W (either call it main.py or through Thonny)
 - Run this code to save the data to a CSV file live
 """
 
