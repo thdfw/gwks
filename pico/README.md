@@ -1,4 +1,4 @@
-# Setting up a new Pico
+# :gift: Setting up a new Pico :gift:
 
 ## Installing necessary libraries
 
@@ -7,11 +7,10 @@ Install the `umqtt.simple` package on the Pico:
 - In Thonny, go to Tools / Manage Packages...
 - Search for `umqtt.simple` and install the package
 
-## Finding a Pico's unique identifier
+## Finding the Pico's unique identifier
 
 - Save `info.py` (provided in the identification directory) on the Pico
-- Physically connect the Pico to a device
-- Run `get_unique_ids.py` on that device, and read prints
+- Either run `info.py` directly on the Pico (in Thonny) or physically connect the Pico to a device and run `get_unique_ids.py` on that device
 
 # Sending messages through MQTT
 
@@ -25,16 +24,17 @@ One device on the LAN needs to start a MQTT broker.
 
 ## 2 - Connect the Pico to the WiFi and MQTT broker
 
-Follow the steps in this subsection to create a MicroPython code on the Pico that can connect to an MQTT broker and publish messages on a given topic.
+The code developed in this subsection should be saved as a .py file on the Pico. If you want it to run automatically as soon as the Pico is connected to power, then save it as `main.py`.
 
 ### 2.1 - Importing the necessary libraries
+
 ```
 from umqtt.simple import MQTTClient
 import network
 import time
 ```
 
-### 2.2 - Specify the WiFi and MQTT broker parameters
+### 2.2 - Specifying the WiFi and MQTT broker parameters
 
 In the following code:
 - Fill in the `wifi_name` and `wifi_password`
@@ -66,7 +66,7 @@ client.connect()
 print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
 ```
 
-### 2.3 - Send messages on a MQTT topic
+### 2.3 - Publishing messages on an MQTT topic
 
 Specify the MQTT topic on which you would like the message to be published, and make sure messages are strings.
 
