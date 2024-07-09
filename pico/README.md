@@ -13,9 +13,9 @@ In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. S
 - Either run `info.py` directly on the Pico (in Thonny)
 - Or physically connect the Pico to a device and run `get_unique_ids.py` on that device
 
-# Sending and receiving messages with MQTT
+# :outbox_tray: Sending and receiving messages with MQTT
 
-## :outbox_tray: Sending messages (Pico -> Raspberry Pi) 
+## Sending messages (Pico -> Raspberry Pi) 
 
 ### Start a MQTT broker on the Raspberry Pi
 
@@ -28,8 +28,8 @@ In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. S
 Open `examples/pico_to_mqtt.py` or any other file destined to publish MQTT messages from the Pico, and follow these steps:
 - Fill in the parameters: `wifi_name`, `wifi_password`, `mqtt_broker` (the local IP address of the device on which the MQTT broker is running, i.e. the Raspberry Pi), `mqtt_username`, and `mqtt_password` (if there is a username and password)
 - Specify the topic on which the messages should be published (`mqtt_topic`) as well as the Pico's client name (`client_name`)
-- Save the file on the Pico and run it. If you want it to run automatically as soon as the Pico is connected to power, save it as `main.py`.
+- Save the file on the Pico and run it - if you want it to run automatically as soon as the Pico is connected to power, save it as `main.py`
 
-## :inbox_tray: Receiving messages (Raspberry Pi <- Pico)
+## Receiving messages (Raspberry Pi <- Pico)
 
 Run the `examples/mqtt_to_pi.py` on the Rasperry Pi (or any other device that should be receiving the messages). Edit the `mqtt_broker` and `mqtt_topic` variables if necessary. If the device that is running the MQTT broker is also the one receiving the messages, then `mqtt_broker` can be set to `"localhost"`.
