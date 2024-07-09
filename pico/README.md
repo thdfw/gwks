@@ -15,6 +15,8 @@ Install the `umqtt.simple` package on the Pico:
 
 # :mailbox_with_mail: Sending and receiving messages with MQTT
 
+**For the flowmeter case, follow these steps but instead of the example files use `flowmeter/pico_to_mqtt.py` (on the Pico) and `flowmeter/mqtt_to_csv.py` (on the Raspberry Pi).**
+
 ## Start a MQTT broker 
 
 - If necessary, install Mosquitto on the device
