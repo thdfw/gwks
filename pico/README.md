@@ -1,4 +1,4 @@
-# :gift: Setting up a new Pico :gift:
+# :gift: Setting up a new Pico
 
 ## Installing necessary libraries
 
