@@ -13,7 +13,7 @@ In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. S
 - Either run `info.py` directly on the Pico (in Thonny)
 - Or physically connect the Pico to a device and run `get_unique_ids.py` on that device
 
-# :outbox_tray: Sending and receiving messages with MQTT
+# :mailbox_with_mail: Sending and receiving messages with MQTT
 
 ## Sending messages (Pico -> Raspberry Pi) 
 
