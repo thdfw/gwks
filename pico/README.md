@@ -32,4 +32,4 @@ Open `examples/pico_to_mqtt.py` or any other file destined to publish MQTT messa
 
 ## Receiving messages (Raspberry Pi <- Pico)
 
-Run the `examples/mqtt_to_pi.py` on the Rasperry Pi (or any other device that should be receiving the messages). Edit the `mqtt_broker` and `mqtt_topic` variables if necessary. If the device that is running the MQTT broker is also the one receiving the messages, then `mqtt_broker` can be set to `"localhost"`.
+On the Raspberry Pi, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico. Edit the `mqtt_broker` and `mqtt_topic` variables if necessary.
