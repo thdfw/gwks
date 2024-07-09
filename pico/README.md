@@ -1,17 +1,17 @@
 # :gift: Setting up a new Pico
 
+## Finding the Pico's unique identifier
+
+In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. Save `info.py` on the Pico.
+- Either run `info.py` directly on the Pico (in Thonny)
+- Or physically connect the Pico to a device and run `get_unique_ids.py` on that device
+
 ## Installing necessary libraries
 
 Install the `umqtt.simple` package on the Pico:
 - Plug in the Pico to a computer
 - In Thonny, go to Tools / Manage Packages...
 - Search for `umqtt.simple` and install the package
-
-## Finding the Pico's unique identifier
-
-In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. Save `info.py` on the Pico.
-- Either run `info.py` directly on the Pico (in Thonny)
-- Or physically connect the Pico to a device and run `get_unique_ids.py` on that device
 
 # :mailbox_with_mail: Sending and receiving messages with MQTT
 
