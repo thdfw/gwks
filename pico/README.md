@@ -21,7 +21,7 @@ In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. S
 
 - If necessary, install Mosquitto on the device
 - If necessary, edit the configuration file `mosquitto.conf`, generally located in /etc/mosquitto/
-- Run mosquitto with the configuration file: `mosquitto -c path/to/mosquitto.conf`
+- Start mosquitto (with the configuration file): `mosquitto` (`mosquitto -c path/to/mosquitto.conf`)
 
 ### Connect the Pico to the WiFi and MQTT broker, and publish messages
 
