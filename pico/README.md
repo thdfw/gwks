@@ -28,16 +28,22 @@ allow_anonymous true
 listener 1883 0.0.0.0
 ```
 
-The command line should look like this:
-![](examples/images/starting_mosquitto.png)
-
-## Prepare for receiving messages
-
-On the Raspberry Pi, in a new terminal window, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico. Edit the `mqtt_broker` and `mqtt_topic` variables if necessary.
-
+The terminal should be displaying something like this:
+```
+1720491672: mosquitto version 2.0.11 starting
+1720491672: Config loaded from /etc/mosquitto/mosquitto.conf.
+1720491672: Opening ipv4 listen socket on port 1883.
+1720491672: mosquitto version 2.0.11 running
+```
 ## Connect the Pico to the WiFi and MQTT broker, and publish messages
 
 Open `examples/pico_to_mqtt.py` or any other file destined to publish MQTT messages from the Pico, and follow these steps:
 - Fill in the parameters: `wifi_name`, `wifi_password`, `mqtt_broker` (the local IP address of the device on which the MQTT broker is running, i.e. the Raspberry Pi), `mqtt_username`, and `mqtt_password` (if there is a username and password)
 - Specify the topic on which the messages should be published (`mqtt_topic`) as well as the Pico's client name (`client_name`)
 - Save the file on the Pico and run it - if you want it to run automatically as soon as the Pico is connected to power, save it as `main.py`
+
+A new connection should appear in the MQTT broker's terminal window as soon as the code starts running.
+
+## Prepare for receiving messages
+
+On the Raspberry Pi, in a new terminal window, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico. Edit the `mqtt_broker` and `mqtt_topic` variables if necessary. This new connection should show up in the first terminal window.
