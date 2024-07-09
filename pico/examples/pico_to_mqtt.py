@@ -1,3 +1,8 @@
+"""
+This code should be running on a Pico. 
+It publishes messages on a given MQTT topic every 10 seconds.
+"""
+
 from umqtt.simple import MQTTClient
 import network
 import time
