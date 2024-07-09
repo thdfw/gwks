@@ -18,10 +18,11 @@ import time
 # PARAMETERS
 # *********************************************
 
-wifi_name = "lbnl-visitor"
-wifi_password = ""
+wifi_name = "ARRIS-3007"
+wifi_password = "ADD SOMERSET PASSWD"
 
-mqtt_broker = "198.128.196.115"
+# 192.168.0.89 is the address for beech2 in somerset, which is set up to allow anonymous
+mqtt_broker = "192.168.0.89"
 mqtt_username = ""
 mqtt_password = ""
 
