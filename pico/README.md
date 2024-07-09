@@ -25,10 +25,10 @@ In `identifcation/`, the `info.py` and `get_unique_ids.py` codes are provided. S
 
 ### Connect the Pico to the WiFi and MQTT broker, and publish messages
 
-Open `examples/pico_to_mqtt.py` or any other file destined to publish MQTT messages from the Pico, and follow these three steps:
-- Save the file on the Pico. If you want it to run automatically as soon as the Pico is connected to power, save it as `main.py`.
+Open `examples/pico_to_mqtt.py` or any other file destined to publish MQTT messages from the Pico, and follow these steps:
 - Fill in the parameters: `wifi_name`, `wifi_password`, `mqtt_broker` (the local IP address of the device on which the MQTT broker is running, i.e. the Raspberry Pi), `mqtt_username`, and `mqtt_password` (if there is a username and password)
 - Specify the topic on which the messages should be published (`mqtt_topic`) as well as the Pico's client name (`client_name`)
+- Save the file on the Pico and run it. If you want it to run automatically as soon as the Pico is connected to power, save it as `main.py`.
 
 ## :inbox_tray: Receiving messages (Raspberry Pi <- Pico)
 

@@ -5,9 +5,8 @@ It receives and prints messages published on an MQTT topic.
 
 import paho.mqtt.client as mqtt
 
-# Parameters
 mqtt_broker = "localhost"
-mqtt_topic = "hall_sensor"
+mqtt_topic = "counting"
 mqtt_port = 1883
 
 def on_connect(client, userdata, flags, rc):
