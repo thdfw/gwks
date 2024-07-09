@@ -15,12 +15,10 @@ Install the `umqtt.simple` package on the Pico:
 
 # :mailbox_with_mail: Sending and receiving messages with MQTT
 
-## Sending messages (Pico -> Raspberry Pi) 
-
-### Start a MQTT broker on the Raspberry Pi
+### Start a MQTT broker 
 
 - If necessary, install Mosquitto on the device
-- If necessary\*, edit the configuration file `mosquitto.conf`, generally located in /etc/mosquitto/
+- If necessary\*, edit the configuration file `mosquitto.conf` (generally located in `/etc/mosquitto/`)
 - Start mosquitto (with the configuration file): `mosquitto` (`mosquitto -c path/to/mosquitto.conf`)
 - If you encounter "Error: Address already in use" and are using Mosquitto>=2.0, run `sudo systemctl stop mosquitto.service` and try again.
 
@@ -33,13 +31,13 @@ listener 1883 0.0.0.0
 The command line should look like this:
 ![](examples/images/starting_mosquitto.png)
 
+### Prepare for receiving messages
+
+On the Raspberry Pi, in a new terminal window, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico. Edit the `mqtt_broker` and `mqtt_topic` variables if necessary.
+
 ### Connect the Pico to the WiFi and MQTT broker, and publish messages
 
 Open `examples/pico_to_mqtt.py` or any other file destined to publish MQTT messages from the Pico, and follow these steps:
 - Fill in the parameters: `wifi_name`, `wifi_password`, `mqtt_broker` (the local IP address of the device on which the MQTT broker is running, i.e. the Raspberry Pi), `mqtt_username`, and `mqtt_password` (if there is a username and password)
 - Specify the topic on which the messages should be published (`mqtt_topic`) as well as the Pico's client name (`client_name`)
 - Save the file on the Pico and run it - if you want it to run automatically as soon as the Pico is connected to power, save it as `main.py`
-
-## Receiving messages (Raspberry Pi <- Pico)
-
-On the Raspberry Pi, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico. Edit the `mqtt_broker` and `mqtt_topic` variables if necessary.
