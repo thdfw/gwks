@@ -46,7 +46,7 @@ def on_message(client, userdata, message):
     csv_file = directory + f"{topic}_{now}.csv"
     with open(csv_file, mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([time.time(), data])
+        writer.writerow([time.time(), int(data)])
 
 client = mqtt.Client()
 client.on_connect = on_connect
