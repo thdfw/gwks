@@ -63,7 +63,7 @@ latest_ekm = 0
 # Callback function to record the timestamp of each hall meter pulse
 def hall_pulse_callback(pin, topic=hall_mqtt_topic):
     timestamp = utime.time_ns()
-    client.publish(hall_mqtt_topic, f"{timestamp}, Saier")
+    client.publish(hall_mqtt_topic, f"{timestamp}")
 
 
 
@@ -79,7 +79,7 @@ def ekm_pulse_callback(pin):
     # ignore jitter at under 5 milliseconds
     if timestamp - latest_ekm > 5_000_000:
         latest_ekm = timestamp
-        client.publish(ekm_mqtt_topic, f"{timestamp}, EKM")
+        client.publish(ekm_mqtt_topic, f"{timestamp}")
 
 
 # Set up the pin for input and attach interrupt for rising edge
