@@ -1,6 +1,7 @@
 """
+commit XXXXXXX of of https://github.com/thdfw/gwks/omega_to_mqtt.py
 This code connects to a given wifi and MQTT broker.
-It then sends a timestamp through MQTT at each pulse of the hall sensor.
+It then sends a timestamp through MQTT at each pulse of the omega sensor, on omega_sensor topic
 Instructions: 
 - If using mosquitto 2.0, place the provided .conf file in /etc/mosquitto/, or similar
 - In Terminal, run "mosquitto -c /etc/mosquitto/mosquitto.conf"
@@ -19,7 +20,7 @@ import time
 # *********************************************
 
 wifi_name = "ARRIS-3007"
-wifi_password = "ADD SOMERSET PASSWD"
+wifi_password = "ADD PASSWORD"
 
 # 192.168.0.89 is the address for beech2 in somerset, which is set up to allow anonymous
 mqtt_broker = "192.168.0.89"
@@ -28,13 +29,11 @@ mqtt_password = ""
 
 
 mqtt_port = 1883
-hall_mqtt_topic = b"hall_sensor"
-ekm_mqtt_topic = b"ekm_sensor"
+mqtt_topic = b"omega_sensor"
 
 client_name = "pico_w"
 
-HALL_PULSE_PIN = 28
-EKM_PULSE_PIN = 21
+PULSE_PIN = 21
 # *********************************************
 # Connecting to WiFi and MQTT broker
 # *********************************************
@@ -58,36 +57,25 @@ print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
 # Reading timestamps
 # *********************************************
 
-latest_ekm = 0
+latest = 0
 
-# Callback function to record the timestamp of each hall meter pulse
-def hall_pulse_callback(pin, topic=hall_mqtt_topic):
-    timestamp = utime.time_ns()
-    client.publish(hall_mqtt_topic, f"{timestamp}")
-
-
-
-def ekm_pulse_callback(pin):
+def pulse_callback(pin):
     """
-    Callback function to record the timestamp of each ekm meter pulse
+    Callback function to record the timestamp of each omega meter pulse
     Ignore false positives in jitter happening under 5 milliseconds
-    as the EKM meter will never have a pulse faster than twice a second
+    as the omega meter will never have a pulse faster than twice a second
     
     """
-    global latest_ekm
+    global latest
     timestamp = utime.time_ns()
     # ignore jitter at under 5 milliseconds
-    if timestamp - latest_ekm > 5_000_000:
-        latest_ekm = timestamp
-        client.publish(ekm_mqtt_topic, f"{timestamp}")
+    if timestamp - latest > 5_000_000:
+        latest = timestamp
+        client.publish(mqtt_topic, f"{timestamp}")
 
 
-# Set up the pin for input and attach interrupt for rising edge
-hall_pulse_pin = machine.Pin(HALL_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
-hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=hall_pulse_callback)
-
-ekm_pulse_pin = machine.Pin(EKM_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-ekm_pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=ekm_pulse_callback)
+pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
 
 try:
     while True:
