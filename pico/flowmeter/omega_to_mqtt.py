@@ -1,6 +1,7 @@
 """
+commit XXXXXXX of of https://github.com/thdfw/gwks/omega_to_mqtt.py
 This code connects to a given wifi and MQTT broker.
-It then sends a timestamp through MQTT at each pulse of the hall sensor.
+It then sends a timestamp through MQTT at each pulse of the omega sensor, on omega_sensor topic
 Instructions: 
 - If using mosquitto 2.0, place the provided .conf file in /etc/mosquitto/, or similar
 - In Terminal, run "mosquitto -c /etc/mosquitto/mosquitto.conf"
@@ -19,20 +20,20 @@ import time
 # *********************************************
 
 wifi_name = "ARRIS-3007"
-wifi_password = "ADD SOMERSET PASSWD"
+wifi_password = "ADD PASSWORD"
 
 # 192.168.0.89 is the address for beech2 in somerset, which is set up to allow anonymous
 mqtt_broker = "192.168.0.89"
 mqtt_username = ""
 mqtt_password = ""
 
+
 mqtt_port = 1883
-mqtt_topic = b"hall_sensor"
+mqtt_topic = b"omega_sensor"
 
 client_name = "pico_w"
 
-HALL_PULSE_PIN = 28
-
+PULSE_PIN = 21
 # *********************************************
 # Connecting to WiFi and MQTT broker
 # *********************************************
@@ -56,24 +57,29 @@ print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
 # Reading timestamps
 # *********************************************
 
-timestamps = []
+latest = 0
 
-# Callback function to record the timestamp of each pulse
-def hall_pulse_callback(pin):
-    global timestamps
+def pulse_callback(pin):
+    """
+    Callback function to record the timestamp of each omega meter pulse
+    Ignore false positives in jitter happening under 5 milliseconds
+    as the omega meter will never have a pulse faster than twice a second
+    
+    """
+    global latest
     timestamp = utime.time_ns()
-    client.publish(mqtt_topic, str(timestamp))
-    timestamps.append(timestamp)
+    # ignore jitter at under 5 milliseconds
+    if timestamp - latest > 5_000_000:
+        latest = timestamp
+        client.publish(mqtt_topic, f"{timestamp}")
 
-# Set up the pin for input and attach interrupt for rising edge
-hall_pulse_pin = machine.Pin(HALL_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
-hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=hall_pulse_callback)
+
+pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
 
 try:
     while True:
-        print(f"Pulse count during last second: {len(timestamps)}")
-        timestamps.clear()
-        utime.sleep(1)
+        utime.sleep(10)
         
 except KeyboardInterrupt:
     print("Program interrupted by user")
