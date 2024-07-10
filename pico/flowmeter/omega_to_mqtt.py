@@ -1,5 +1,5 @@
 """
-commit XXXXXXX of of https://github.com/thdfw/gwks/omega_to_mqtt.py
+commit XXXXXXXX of https://github.com/thdfw/gwks/
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the omega sensor, on omega_sensor topic
 Instructions: 
@@ -14,6 +14,7 @@ import utime
 import network
 from umqtt.simple import MQTTClient
 import time
+import ubinascii
 
 # *********************************************
 # PARAMETERS
@@ -22,18 +23,29 @@ import time
 wifi_name = "ARRIS-3007"
 wifi_password = "ADD PASSWORD"
 
-# 192.168.0.89 is the address for beech2 in somerset, which is set up to allow anonymous
+# Address for beech2 in somerset
 mqtt_broker = "192.168.0.89"
 mqtt_username = ""
 mqtt_password = ""
 
-
 mqtt_port = 1883
 mqtt_topic = b"omega_sensor"
 
-client_name = "pico_w"
+pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
+client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
 
 PULSE_PIN = 21
+
+# *********************************************
+# Publish unique ID on request
+# *********************************************
+
+def sub_callback(topic, msg):
+    message = msg.decode('utf-8')
+    topic = topic.decode('utf-8')
+    if message=="Request for unique_id" and topic==mqtt_topic:
+        client.publish(mqtt_topic, f'Pico unique ID: {pico_unique_id}')
+
 # *********************************************
 # Connecting to WiFi and MQTT broker
 # *********************************************
@@ -48,10 +60,12 @@ if not wlan.isconnected():
         time.sleep(1)
 print(f"Connected to wifi {wifi_name}")
 
-# Connect to MQTT broker
+# Connect to MQTT broker and subscribe to topic
 client = MQTTClient(client_name, mqtt_broker, user=mqtt_username, password=mqtt_password, port=mqtt_port)
+client.set_callback(sub_callback)
 client.connect()
-print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
+print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic}")
+client.subscribe(mqtt_topic)
 
 # *********************************************
 # Reading timestamps
@@ -64,7 +78,6 @@ def pulse_callback(pin):
     Callback function to record the timestamp of each omega meter pulse
     Ignore false positives in jitter happening under 5 milliseconds
     as the omega meter will never have a pulse faster than twice a second
-    
     """
     global latest
     timestamp = utime.time_ns()
@@ -73,13 +86,14 @@ def pulse_callback(pin):
         latest = timestamp
         client.publish(mqtt_topic, f"{timestamp}")
 
-
+# Set up the pin for input and attach interrupt for falling edge
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
 pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
 
 try:
     while True:
-        utime.sleep(10)
-        
+        # Check for request messages on the topic
+        client.check_msg()
+        utime.sleep(5)
 except KeyboardInterrupt:
     print("Program interrupted by user")
