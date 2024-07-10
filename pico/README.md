@@ -48,4 +48,4 @@ A new connection should appear in the MQTT broker's terminal window as soon as t
 
 ## Receiving messages
 
-On the Raspberry Pi, in a new terminal window, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico. Edit the `mqtt_broker` and `mqtt_topic` variables if necessary. This new connection should show up in the first terminal window.
+On the Raspberry Pi, in a new terminal window, run `examples/mqtt_to_pi.py` or any other file destined to receive MQTT messages from the Pico (e.g. from [starter-scripts](https://github.com/thegridelectric/starter-scripts/blob/main/flow/pico/pico_mqtt_to_csv.py) . Edit the `mqtt_broker` and `mqtt_topic` variables if necessary. This new connection should show up in the first terminal window.

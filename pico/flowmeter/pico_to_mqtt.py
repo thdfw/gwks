@@ -28,12 +28,13 @@ mqtt_password = ""
 
 
 mqtt_port = 1883
-mqtt_topic = b"hall_sensor"
+hall_mqtt_topic = b"hall_sensor"
+ekm_mqtt_topic = b"ekm_sensor"
 
 client_name = "pico_w"
 
 HALL_PULSE_PIN = 28
-
+EKM_PULSE_PIN = 29
 # *********************************************
 # Connecting to WiFi and MQTT broker
 # *********************************************
@@ -57,24 +58,40 @@ print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
 # Reading timestamps
 # *********************************************
 
-timestamps = []
+latest_ekm = 0
 
-# Callback function to record the timestamp of each pulse
-def hall_pulse_callback(pin):
-    global timestamps
+# Callback function to record the timestamp of each hall meter pulse
+def hall_pulse_callback(pin, topic=hall_mqtt_topic):
     timestamp = utime.time_ns()
-    client.publish(mqtt_topic, str(timestamp))
-    timestamps.append(timestamp)
+    client.publish(hall_mqtt_topic, f"{timestamp}, Saier")
+
+
+
+def ekm_pulse_callback(pin):
+    """
+    Callback function to record the timestamp of each ekm meter pulse
+    Ignore false positives in jitter happening under 5 milliseconds
+    as the EKM meter will never have a pulse faster than twice a second
+    
+    """
+    global latest_ekm
+    timestamp = utime.time_ns()
+    # ignore jitter at under 5 milliseconds
+    if timestamp - latest_ekm > 5_000_000:
+        latest_ekm = timestamp
+        client.publish(ekm_mqtt_topic, f"{timestamp}, EKM")
+
 
 # Set up the pin for input and attach interrupt for rising edge
 hall_pulse_pin = machine.Pin(HALL_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
 hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=hall_pulse_callback)
 
+ekm_pulse_pin = machine.Pin(EKM_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
+ekm_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=ekm_pulse_callback)
+
 try:
     while True:
-        print(f"Pulse count during last second: {len(timestamps)}")
-        timestamps.clear()
-        utime.sleep(1)
+        utime.sleep(10)
         
 except KeyboardInterrupt:
     print("Program interrupted by user")
