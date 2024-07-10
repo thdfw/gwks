@@ -34,7 +34,7 @@ ekm_mqtt_topic = b"ekm_sensor"
 client_name = "pico_w"
 
 HALL_PULSE_PIN = 28
-EKM_PULSE_PIN = 29
+EKM_PULSE_PIN = 21
 # *********************************************
 # Connecting to WiFi and MQTT broker
 # *********************************************
