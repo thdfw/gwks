@@ -86,8 +86,8 @@ def ekm_pulse_callback(pin):
 hall_pulse_pin = machine.Pin(HALL_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
 hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=hall_pulse_callback)
 
-ekm_pulse_pin = machine.Pin(EKM_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
-ekm_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=ekm_pulse_callback)
+ekm_pulse_pin = machine.Pin(EKM_PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
+ekm_pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=ekm_pulse_callback)
 
 try:
     while True:
