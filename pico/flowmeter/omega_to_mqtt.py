@@ -27,6 +27,7 @@ wifi_password = "ADD PASSWORD"
 mqtt_broker = "192.168.0.89"
 mqtt_username = ""
 mqtt_password = ""
+deadband_milliseconds = 100
 
 mqtt_port = 1883
 mqtt_topic = b"omega_sensor"
@@ -79,13 +80,13 @@ latest = 0
 def pulse_callback(pin):
     """
     Callback function to record the timestamp of each omega meter pulse
-    Ignore false positives in jitter happening under 5 milliseconds
-    as the omega meter will never have a pulse faster than twice a second
+    Ignore false positives in jitter happening under deadband milliseconds
+    (e.g. 100 ms) as even an ekm meter with 0.0748 gpm will have at least a
+    500 ms period at 10 gpm
     """
     global latest
     timestamp = utime.time_ns()
-    # ignore jitter at under 5 milliseconds
-    if timestamp - latest > 5_000_000:
+    if timestamp - latest > 1_000_000 * deadband_milliseconds:
         latest = timestamp
         client.publish(mqtt_topic, f"{timestamp}")
 
