@@ -70,6 +70,9 @@ client.connect()
 print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic}")
 client.subscribe(mqtt_topic)
 
+# Publish a first timestamp
+client.publish(mqtt_topic, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
+
 # *********************************************
 # Reading timestamps
 # *********************************************
