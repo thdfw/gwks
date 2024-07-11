@@ -16,6 +16,9 @@ from umqtt.simple import MQTTClient
 import time
 import ubinascii
 
+hb_topic = b"dist-flow/hb"
+hb =  {'MyHex': '0', 'YourLastHex': '0', 'TypeName': 'heartbeat.a', 'Version': '100'}
+
 # *********************************************
 # PARAMETERS
 # *********************************************
@@ -83,6 +86,18 @@ def pulse_callback(pin, topic=mqtt_topic):
 hall_pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
 hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=pulse_callback)
 
+# *********************************************
+# Publish Heartbeat
+# *********************************************
+
+def publish_heartbeat(timer):
+    client.publish(hb_topic, str(hb))
+
+# Create a timer to publish heartbeat every 3 seconds
+heartbeat_timer = machine.Timer(-1)
+heartbeat_timer.init(period=3000, mode=machine.Timer.PERIODIC, callback=publish_heartbeat)
+
+
 try:
     while True:
         # Check for request messages on the topic
@@ -90,3 +105,4 @@ try:
         utime.sleep(5)
 except KeyboardInterrupt:
     print("Program interrupted by user")
+    heartbeat_timer.deinit()

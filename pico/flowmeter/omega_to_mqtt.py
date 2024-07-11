@@ -1,5 +1,5 @@
 """
-commit XXXXXXXX of https://github.com/thdfw/gwks/
+commit ###### of https://github.com/thdfw/gwks/pico/flowmeter/omega_to_mqtt.py
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the omega sensor, on omega_sensor topic
 Instructions: 
@@ -19,9 +19,12 @@ import ubinascii
 # *********************************************
 # PARAMETERS
 # *********************************************
+hb_topic = b"dist-omega-flow/hb"
+hb =  {'MyHex': '0', 'YourLastHex': '0', 'TypeName': 'heartbeat.a', 'Version': '100'}
+mqtt_topic = b"omega_sensor"
 
 wifi_name = "ARRIS-3007"
-wifi_password = "ADD PASSWORD"
+wifi_password = "ADD PASS"
 
 # Address for beech2 in somerset
 mqtt_broker = "192.168.0.89"
@@ -30,7 +33,7 @@ mqtt_password = ""
 deadband_milliseconds = 100
 
 mqtt_port = 1883
-mqtt_topic = b"omega_sensor"
+
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
@@ -93,6 +96,18 @@ def pulse_callback(pin):
 # Set up the pin for input and attach interrupt for falling edge
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
 pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
+
+# *********************************************
+# Publish Heartbeat
+# *********************************************
+
+def publish_heartbeat(timer):
+    client.publish(hb_topic, str(hb))
+
+# Create a timer to publish heartbeat every 3 seconds
+heartbeat_timer = machine.Timer(-1)
+heartbeat_timer.init(period=3000, mode=machine.Timer.PERIODIC, callback=publish_heartbeat)
+
 
 try:
     while True:
