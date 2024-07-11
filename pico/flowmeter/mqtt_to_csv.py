@@ -43,6 +43,9 @@ def on_message(client, userdata, message):
     '''Writes the data received on the MQTT topics to distinct CSV files'''
     data = message.payload.decode()
     topic = message.topic
+    if 'Calibration' in data:
+        print(data)
+        return
     try:
         data = int(data)
     except ValueError:

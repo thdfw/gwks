@@ -31,11 +31,8 @@ mqtt_password = ""
 mqtt_port = 1883
 mqtt_topic = b"hall_sensor"
 
-now = utime.localtime(utime.time())
-time_of_connection = "{:04d}-{:02d}-{:02d}-{:02d}-{:02d}-{:02d}".format(now[0],now[1],now[2],now[3],now[4],now[5])
-
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
-client_name = f"pico_w_{str(pico_unique_id)[-6:]}_{time_of_connection}"
+client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
 
 PULSE_PIN = 28
 
