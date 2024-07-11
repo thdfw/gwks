@@ -43,6 +43,11 @@ def on_message(client, userdata, message):
     '''Writes the data received on the MQTT topics to distinct CSV files'''
     data = message.payload.decode()
     topic = message.topic
+    try:
+        data = int(data)
+    except ValueError:
+        print(f"Warning: Non-integer data received on topic {topic}: {data}")
+        return
     csv_file = directory + f"{topic}_{now}.csv"
     with open(csv_file, mode='a', newline='') as file:
         writer = csv.writer(file)
