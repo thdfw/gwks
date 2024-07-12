@@ -1,5 +1,5 @@
 """
-commit XXXXXXXX of https://github.com/thdfw/gwks/
+commit ###### of https://github.com/thdfw/gwks/pico/flowmeter/omega_to_mqtt.py
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the omega sensor, on omega_sensor topic
 Instructions: 
@@ -16,12 +16,15 @@ from umqtt.simple import MQTTClient
 import time
 import ubinascii
 
+hb_topic = b"dist-omega-flow/hb"
+hb =  {'MyHex': '0', 'YourLastHex': '0', 'TypeName': 'heartbeat.a', 'Version': '100'}
+
 # *********************************************
 # PARAMETERS
 # *********************************************
 
 wifi_name = "ARRIS-3007"
-wifi_password = "ADD PASSWORD"
+wifi_password = "ADD PASS"
 
 # Address for beech2 in somerset
 mqtt_broker = "192.168.0.89"
@@ -30,11 +33,14 @@ mqtt_password = ""
 
 mqtt_port = 1883
 mqtt_topic = b"omega_sensor"
+mqtt_topic2 = b"omega_id"
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
 
 PULSE_PIN = 21
+
+deadband_milliseconds = 100
 
 # *********************************************
 # Publish unique ID on request
@@ -43,8 +49,8 @@ PULSE_PIN = 21
 def sub_callback(topic, msg):
     message = msg.decode('utf-8')
     topic = topic.decode('utf-8')
-    if message=="Request for unique_id" and topic==mqtt_topic:
-        client.publish(mqtt_topic, f'Pico unique ID: {pico_unique_id}')
+    if message=="Request for unique_id" and topic=="omega_id":
+        client.publish(mqtt_topic2, f'Pico unique ID: {pico_unique_id}')
 
 # *********************************************
 # Connecting to WiFi and MQTT broker
@@ -64,8 +70,8 @@ print(f"Connected to wifi {wifi_name}")
 client = MQTTClient(client_name, mqtt_broker, user=mqtt_username, password=mqtt_password, port=mqtt_port)
 client.set_callback(sub_callback)
 client.connect()
-print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic}")
-client.subscribe(mqtt_topic)
+print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic2}")
+client.subscribe(mqtt_topic2)
 
 # Publish a first timestamp
 client.publish(mqtt_topic, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
@@ -79,19 +85,31 @@ latest = 0
 def pulse_callback(pin):
     """
     Callback function to record the timestamp of each omega meter pulse
-    Ignore false positives in jitter happening under 5 milliseconds
-    as the omega meter will never have a pulse faster than twice a second
+    Ignore false positives in jitter happening under deadband milliseconds
+    (e.g. 100 ms) as even an ekm meter with 0.0748 gpm will have at least a
+    500 ms period at 10 gpm
     """
     global latest
     timestamp = utime.time_ns()
-    # ignore jitter at under 5 milliseconds
-    if timestamp - latest > 5_000_000:
+    if timestamp - latest > 1_000_000 * deadband_milliseconds:
         latest = timestamp
         client.publish(mqtt_topic, f"{timestamp}")
 
 # Set up the pin for input and attach interrupt for falling edge
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
 pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
+
+# *********************************************
+# Publish Heartbeat
+# *********************************************
+
+def publish_heartbeat(timer):
+    client.publish(hb_topic, str(hb))
+
+# Create a timer to publish heartbeat every 3 seconds
+heartbeat_timer = machine.Timer(-1)
+heartbeat_timer.init(period=3000, mode=machine.Timer.PERIODIC, callback=publish_heartbeat)
+
 
 try:
     while True:

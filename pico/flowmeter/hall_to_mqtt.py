@@ -1,5 +1,5 @@
 """
-commit XXXXXXXX of https://github.com/thdfw/gwks/
+commit ###### of https://github.com/thdfw/gwks/pico/flowmeter/hall_to_mqtt.py
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the hall sensor, on hall_sensor topic
 Instructions: 
@@ -16,6 +16,9 @@ from umqtt.simple import MQTTClient
 import time
 import ubinascii
 
+hb_topic = b"dist-flow/hb"
+hb =  {'MyHex': '0', 'YourLastHex': '0', 'TypeName': 'heartbeat.a', 'Version': '100'}
+
 # *********************************************
 # PARAMETERS
 # *********************************************
@@ -30,6 +33,7 @@ mqtt_password = ""
 
 mqtt_port = 1883
 mqtt_topic = b"hall_sensor"
+mqtt_topic2 = b"hall_id"
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
@@ -43,8 +47,8 @@ PULSE_PIN = 28
 def sub_callback(topic, msg):
     message = msg.decode('utf-8')
     topic = topic.decode('utf-8')
-    if message=="Request for unique_id" and topic==mqtt_topic:
-        client.publish(mqtt_topic, f'Pico unique ID: {pico_unique_id}')
+    if message=="Request for unique_id" and topic=="hall_id":
+        client.publish(mqtt_topic2, f'Pico unique ID: {pico_unique_id}')
 
 # *********************************************
 # Connecting to WiFi and MQTT broker
@@ -64,8 +68,8 @@ print(f"Connected to wifi {wifi_name}")
 client = MQTTClient(client_name, mqtt_broker, user=mqtt_username, password=mqtt_password, port=mqtt_port)
 client.set_callback(sub_callback)
 client.connect()
-print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic}")
-client.subscribe(mqtt_topic)
+print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic2}")
+client.subscribe(mqtt_topic2)
 
 # Publish a first timestamp
 client.publish(mqtt_topic, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
@@ -83,6 +87,18 @@ def pulse_callback(pin, topic=mqtt_topic):
 hall_pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
 hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=pulse_callback)
 
+# *********************************************
+# Publish Heartbeat
+# *********************************************
+
+def publish_heartbeat(timer):
+    client.publish(hb_topic, str(hb))
+
+# Create a timer to publish heartbeat every 3 seconds
+heartbeat_timer = machine.Timer(-1)
+heartbeat_timer.init(period=3000, mode=machine.Timer.PERIODIC, callback=publish_heartbeat)
+
+
 try:
     while True:
         # Check for request messages on the topic
@@ -90,3 +106,4 @@ try:
         utime.sleep(5)
 except KeyboardInterrupt:
     print("Program interrupted by user")
+    heartbeat_timer.deinit()
