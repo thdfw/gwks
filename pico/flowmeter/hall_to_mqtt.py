@@ -95,7 +95,9 @@ def pulse_callback(pin, topic=mqtt_topic):
     Callback function to record the timestamp of each hall meter tick 
     and send by mqtt. Sends on topic dist-flow/tick
     """
+    global latest
     timestamp = utime.time_ns()
+    latest = timestamp
     client.publish(send_topic_tick , f"{timestamp}")
 
 # Set up the pin for input and attach interrupt for rising edge
