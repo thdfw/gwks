@@ -56,9 +56,7 @@ PULSE_PIN = 28
 # *********************************************
 
 def sub_callback(topic, msg):
-    message = msg.decode('utf-8')
-    topic = topic.decode('utf-8')
-    if message=="Request for unique_id" and topic==receive_topic_hwuid:
+    if topic==receive_topic_hwuid:
         client.publish(send_topic_hwuid, f'Pico unique ID: {pico_unique_id}')
 
 # *********************************************
