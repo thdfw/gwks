@@ -1,7 +1,6 @@
 import time
 import serial
 import RPi.GPIO as GPIO
-from time import sleep
 
 GPIO.setmode(GPIO.BOARD)
 
@@ -11,7 +10,7 @@ Turn it on (high) to enable sending values to RS-485.
 '''
 GPIO.setup(7, GPIO.OUT, initial=GPIO.HIGH)
 
-send = serial.Serial(
+ser = serial.Serial(
     port='/dev/serial0',
     baudrate = 9600,
     parity=serial.PARITY_NONE,
@@ -24,6 +23,6 @@ i = [0,10,45,90,135,180,135,90,45,10,0]
 
 while True:
     for x in i:
-        send.write(str(x).encode('utf-8'))
+        ser.write(str(x).encode('utf-8'))
         print(x)
         time.sleep(2)

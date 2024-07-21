@@ -1,11 +1,13 @@
 import time
 import serial
 import RPi.GPIO as GPIO
-from time import sleep
 
 GPIO.setmode(GPIO.BOARD)
 
-# Pin 7 of Pi is connected to DE & RE of RS-485. Turn it off (low) to receive from RS-485.
+'''
+Pin 7 of Pi is connected to DE & RE of RS-485. 
+Turn it off (low) to receive from RS-485.
+'''
 GPIO.setup(7, GPIO.OUT, initial=GPIO.LOW)
 
 ser = serial.Serial(
