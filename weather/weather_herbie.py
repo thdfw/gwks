@@ -58,7 +58,8 @@ for hour in range(24):
         temp = get_temp(today_midnight+timedelta(hours=hour), coordinates)
         wf_herbie.append(temp)
         print(f'Hour {hour}: {temp} Kelvin')
-    except:
+    except Exception as e:
+        print(e)
         wf_herbie.append(np.nan)
 
 plt.figure(figsize=(10, 5))
