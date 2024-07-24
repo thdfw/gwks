@@ -16,8 +16,18 @@ from umqtt.simple import MQTTClient
 import time
 import ubinascii
 
-hb_topic = b"dist-omega-flow/hb"
-hb =  {'MyHex': '0', 'YourLastHex': '0', 'TypeName': 'heartbeat.a', 'Version': '100'}
+node_name = "dist-omega-flow"
+
+# *********************************************
+# TOPICS
+# *********************************************
+
+send_topic_hb = b"dist-omega-flow/hb"
+send_topic_tick = b"dist-omega-flow/tick"
+send_topic_hwuid = b"dist-omega-flow/scada/hw-uid-response"
+
+receive_topic_hwuid = b"scada/dist-omega-flow/hw-uid-request"
+
 
 # *********************************************
 # PARAMETERS
@@ -32,8 +42,6 @@ mqtt_username = ""
 mqtt_password = ""
 
 mqtt_port = 1883
-mqtt_topic = b"omega_sensor"
-mqtt_topic2 = b"omega_id"
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
@@ -47,10 +55,8 @@ deadband_milliseconds = 100
 # *********************************************
 
 def sub_callback(topic, msg):
-    message = msg.decode('utf-8')
-    topic = topic.decode('utf-8')
-    if message=="Request for unique_id" and topic=="omega_id":
-        client.publish(mqtt_topic2, f'Pico unique ID: {pico_unique_id}')
+    if topic==receive_topic_hwuid:
+        client.publish(send_topic_hwuid, f'Pico unique ID: {pico_unique_id}')
 
 # *********************************************
 # Connecting to WiFi and MQTT broker
@@ -70,11 +76,12 @@ print(f"Connected to wifi {wifi_name}")
 client = MQTTClient(client_name, mqtt_broker, user=mqtt_username, password=mqtt_password, port=mqtt_port)
 client.set_callback(sub_callback)
 client.connect()
-print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {mqtt_topic2}")
-client.subscribe(mqtt_topic2)
+client.subscribe(receive_topic_hwuid)
+print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {receive_topic_hwuid}")
+
 
 # Publish a first timestamp
-client.publish(mqtt_topic, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
+client.publish(send_topic_tick, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
 
 # *********************************************
 # Reading timestamps
@@ -93,7 +100,7 @@ def pulse_callback(pin):
     timestamp = utime.time_ns()
     if timestamp - latest > 1_000_000 * deadband_milliseconds:
         latest = timestamp
-        client.publish(mqtt_topic, f"{timestamp}")
+        client.publish(send_topic_tick , f"{timestamp}")
 
 # Set up the pin for input and attach interrupt for falling edge
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -102,9 +109,22 @@ pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
 # *********************************************
 # Publish Heartbeat
 # *********************************************
+hb = 0
 
 def publish_heartbeat(timer):
-    client.publish(hb_topic, str(hb))
+    """
+    Publish a heartbeat, assuming no omega tick in the last 5 minutes.
+    Acts as a keepalive
+    """
+    global hb
+    global latest
+    hb = (hb + 1) % 16
+    hbstr = "{:x}".format(hb)
+    msg =  {'MyHex': hbstr, 'TypeName': 'hb', 'Version': '000'}
+    timestamp = utime.time_ns()
+    if (timestamp - latest) / 10**9 > 300:
+        client.publish(send_topic_hb, str(msg))
+
 
 # Create a timer to publish heartbeat every 3 seconds
 heartbeat_timer = machine.Timer(-1)
