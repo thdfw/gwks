@@ -4,10 +4,23 @@ from ubinascii import hexlify
 import utime
 
 def write_in_log(error_message):
-    print(f'{error_message} at time {utime.time_ns()}')
+    
+    # Get human readable time stamp
+    ns = utime.time_ns()
+    seconds = ns // 1_000_000_000
+    microseconds = (ns % 1_000_000_000) // 1_000
+    formatted_time = utime.localtime(seconds)
+    human_readable = "{:04}-{:02}-{:02} {:02}:{:02}:{:02}.{:03}".format(
+        formatted_time[0], formatted_time[1], formatted_time[2],
+        formatted_time[3], formatted_time[4], formatted_time[5],
+        microseconds
+    )
+    
+    # Print and write to log file
+    print(f'{error_message} at time {human_readable}')
     try:
         with open('mqtt.log', 'a') as log_file:
-            log_file.write(f'{error_message} at time {utime.time_ns()}\n')
+            log_file.write(f'{error_message} at time {human_readable}\n')
             log_file.flush()
     except OSError as e:
         print(f"Error writing to log file ({e})")
@@ -234,5 +247,3 @@ class MQTTClient:
 
 
 __version__ = '1.4.0'
-
-
