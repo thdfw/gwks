@@ -15,6 +15,10 @@ import csv
 import pendulum
 import paho.mqtt.client as mqtt
 
+#
+# IMPORTANT: decide wether or not you want the watchdog to be active
+#
+WATCHDOG = True
 
 # *********************************************
 # PARAMETERS
@@ -28,6 +32,8 @@ omega_tick_topic = "dist-omega-flow/tick"
 hall_hb_topic = "dist-flow/hb"
 omega_hb_topic = "dist-omega-flow/hb"
 
+hall_log_topic = "dist-flow/log"
+omega_log_topic = "dist-omega-flow/log"
 
 last_message_time = time.time()
 
@@ -48,6 +54,10 @@ def on_connect(client, userdata, flags, rc):
     print(f"Connected and subscribed to {hall_hb_topic}")
     client.subscribe(omega_hb_topic)
     print(f"Connected and subscribed to {omega_hb_topic}")
+    client.subscribe(hall_log_topic)
+    print(f"Connected and subscribed to {hall_log_topic}")
+    client.subscribe(omega_log_topic)
+    print(f"Connected and subscribed to {omega_log_topic}")
     csv_file = directory + f"hall/omega_{now_for_file}.csv"
     print(f"Writing to {csv_file}. Using America/New Timezone")
 
@@ -58,6 +68,14 @@ def on_message(client, userdata, message):
     last_message_time = time.time()
     data = message.payload.decode()
     topic = message.topic
+    if topic == hall_log_topic:
+        log_file = directory + f"log_hall.log"
+        with open(log_file, mode='a') as file:
+            file.write(str(data))
+    elif topic == omega_log_topic:
+        log_file = directory + f"log_omega.log"
+        with open(log_file, mode='a') as file:
+            file.write(str(data))
     if topic not in [hall_tick_topic, omega_tick_topic]:
         return
     if 'Calibration' in data:
@@ -86,47 +104,49 @@ client.on_message = on_message
 
 client.connect(mqtt_broker, mqtt_port, 60)
 
-from gwproto.enums import ChangeAquastatControl, ChangeHeatPumpControl, ChangeRelayState
-from nsm_base import NSMBase
-from typing import Dict
-from actors.config import GeorgeScratchSettings as Settings
-from data_classes.house_0_layout import RelayActionChoice
-from data_classes.house_0_layout import House0RelayIdx as RelayIdx
-import dotenv
-import krida
+if WATCHDOG:
+        
+    from gwproto.enums import ChangeAquastatControl, ChangeHeatPumpControl, ChangeRelayState
+    from nsm_base import NSMBase
+    from typing import Dict
+    from actors.config import GeorgeScratchSettings as Settings
+    from data_classes.house_0_layout import RelayActionChoice
+    from data_classes.house_0_layout import House0RelayIdx as RelayIdx
+    import dotenv
+    import krida
 
-class PowerCycle(NSMBase):
+    class PowerCycle(NSMBase):
 
-    def __init__(self, settings: Settings, relays: Dict[int, RelayActionChoice]):
-        super().__init__(settings, relays)
+        def __init__(self, settings: Settings, relays: Dict[int, RelayActionChoice]):
+            super().__init__(settings, relays)
 
-    def enter_onpeak_event(self):
-        pass
+        def enter_onpeak_event(self):
+            pass
 
-    def enter_offpeak_event(self):
-        pass
+        def enter_offpeak_event(self):
+            pass
 
-    def cycle_picos(self):
-        print("Started cycling")
-        self.start_driver()
-        time.sleep(5)
-        self.change_relay_state(self.relays[RelayIdx.PICOS], ChangeRelayState.OpenRelay)
-        time.sleep(10)
-        self.change_relay_state(self.relays[RelayIdx.PICOS], ChangeRelayState.CloseRelay)
-        time.sleep(10)
-        print("Finished cycling")
+        def cycle_picos(self):
+            print("Started cycling")
+            self.start_driver()
+            time.sleep(5)
+            self.change_relay_state(self.relays[RelayIdx.PICOS], ChangeRelayState.OpenRelay)
+            time.sleep(10)
+            self.change_relay_state(self.relays[RelayIdx.PICOS], ChangeRelayState.CloseRelay)
+            time.sleep(10)
+            print("Finished cycling")
 
-nsm = PowerCycle(settings=Settings(_env_file=dotenv.find_dotenv()), relays=krida.RELAYS)
+    nsm = PowerCycle(settings=Settings(_env_file=dotenv.find_dotenv()), relays=krida.RELAYS)
 
-def check_last_message():
-    '''Thread function to check the time since the last received message'''
-    global last_message_time
-    while True:
-        time.sleep(5)
-        if time.time() - last_message_time > 10:
-            time_str = pendulum.now('America/New_York').format('HH:mm:ss')
-            print(f"[{time_str}] Warning: No message received in the last 10 seconds")
-            nsm.cycle_picos()
+    def check_last_message():
+        '''Thread function to check the time since the last received message'''
+        global last_message_time
+        while True:
+            time.sleep(5)
+            if time.time() - last_message_time > 10:
+                time_str = pendulum.now('America/New_York').format('HH:mm:ss')
+                print(f"[{time_str}] Warning: No message received in the last 10 seconds")
+                nsm.cycle_picos()
 
 # Create and start the thread for checking the last message time
 warning_thread = threading.Thread(target=check_last_message)
