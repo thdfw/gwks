@@ -69,11 +69,11 @@ def on_message(client, userdata, message):
     data = message.payload.decode()
     topic = message.topic
     if topic == hall_log_topic:
-        log_file = directory + f"log_hall.log"
+        log_file = directory + f"dist-flow.log"
         with open(log_file, mode='a') as file:
             file.write(str(data))
     elif topic == omega_log_topic:
-        log_file = directory + f"log_omega.log"
+        log_file = directory + f"dist-omega-flow.log"
         with open(log_file, mode='a') as file:
             file.write(str(data))
     if topic not in [hall_tick_topic, omega_tick_topic]:
