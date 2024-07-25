@@ -124,8 +124,7 @@ def pulse_callback(pin, topic=mqtt_topic):
     count_hall_ticks += 1
     if count_hall_ticks > 1000:
         with open('ticks.csv', 'w') as file:
-            writer = csv.writer(file)
-            writer.writerow(timestamp)
+            file.write(f'{timestamp}\n')
         count_hall_ticks = 0
 
 # Set up the pin for input and attach interrupt for rising edge
