@@ -104,6 +104,8 @@ if log_file_exists:
 # *********************************************
 
 latest = 0
+count_hall_ticks = 0
+
 # Callback function to record the timestamp of each hall meter pulse
 def pulse_callback(pin, topic=mqtt_topic):
     """
@@ -111,9 +113,19 @@ def pulse_callback(pin, topic=mqtt_topic):
     and send by mqtt. Sends on topic dist-flow/tick
     """
     global latest
+    global count_hall_ticks
+            
     timestamp = utime.time_ns()
     latest = timestamp
+    
     client.publish(send_topic_tick , f"{timestamp}")
+    
+    count_hall_ticks += 1
+    if count_hall_ticks > 1000:
+        with open('ticks.csv', 'w') as file:
+            writer = csv.writer(file)
+            writer.writerow(timestamp)
+        count_hall_ticks = 0
 
 # Set up the pin for input and attach interrupt for rising edge
 hall_pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
