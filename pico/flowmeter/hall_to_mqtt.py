@@ -1,5 +1,5 @@
 """
-commit ###### of https://github.com/thdfw/gwks/pico/flowmeter/hall_to_mqtt.py
+commit 3b2919c0 of https://github.com/thdfw/gwks/pico/flowmeter/hall_to_mqtt.py
 This code connects to a given wifi and MQTT broker.
 It then sends a timestamp through MQTT at each pulse of the hall sensor, on hall_sensor topic
 Instructions: 
@@ -9,13 +9,23 @@ Instructions:
 - Save the data to a CSV file live by running mqtt_to_csv.py
 """
 
+# Saving the previous log file content, then deleting the file
+import uos
+try:
+    uos.stat('mqtt.log')
+    log_file_exists = True
+    with open('mqtt.log', 'r') as f:
+        log_content = f.read()
+    uos.remove('mqtt.log')
+except OSError:
+    log_file_exists = False
+
 import machine
 import utime
 import network
 from umqtt.simple import MQTTClient
 import time
 import ubinascii
-
 
 node_name = "dist-flow"
 HB_FREQUENCY_S = 3
@@ -26,6 +36,7 @@ HB_FREQUENCY_S = 3
 send_topic_hb = b"dist-flow/hb"
 send_topic_tick = b"dist-flow/tick"
 send_topic_hwuid = b"dist-flow/scada/hw-uid-response"
+send_topic_log = b"dist-flow/log"
 
 receive_topic_hwuid = b"scada/dist-flow/hw-uid-request"
 
@@ -80,9 +91,13 @@ client.connect()
 client.subscribe(receive_topic_hwuid)
 print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {receive_topic_hwuid}")
 
-
 # Publish a first timestamp
 client.publish(send_topic_tick, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
+
+# Publish the content of the previous log file
+if log_file_exists:
+    client.publish(send_topic_log, f'{log_content}')
+    print(f"Published previous log file to topic {send_topic_log}")
 
 # *********************************************
 # Reading timestamps

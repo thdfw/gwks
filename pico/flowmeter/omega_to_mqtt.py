@@ -9,6 +9,17 @@ Instructions:
 - Save the data to a CSV file live by running mqtt_to_csv.py
 """
 
+# Saving the previous log file content, then deleting the file
+import uos
+try:
+    uos.stat('mqtt.log')
+    log_file_exists = True
+    with open('mqtt.log', 'r') as f:
+        log_content = f.read()
+    uos.remove('mqtt.log')
+except OSError:
+    log_file_exists = False
+
 import machine
 import utime
 import network
@@ -25,6 +36,7 @@ node_name = "dist-omega-flow"
 send_topic_hb = b"dist-omega-flow/hb"
 send_topic_tick = b"dist-omega-flow/tick"
 send_topic_hwuid = b"dist-omega-flow/scada/hw-uid-response"
+send_topic_log = b"dist-omega-flow/log"
 
 receive_topic_hwuid = b"scada/dist-omega-flow/hw-uid-request"
 
@@ -34,7 +46,7 @@ receive_topic_hwuid = b"scada/dist-omega-flow/hw-uid-request"
 # *********************************************
 
 wifi_name = "ARRIS-3007"
-wifi_password = "ADD PASS"
+wifi_password = "ADD PASSWORD"
 
 # Address for beech2 in somerset
 mqtt_broker = "192.168.0.89"
@@ -79,9 +91,13 @@ client.connect()
 client.subscribe(receive_topic_hwuid)
 print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}, and subscribed to {receive_topic_hwuid}")
 
-
 # Publish a first timestamp
 client.publish(send_topic_tick, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
+
+# Publish the content of the previous log file
+if log_file_exists:
+    client.publish(send_topic_log, f'{log_content}')
+    print(f"Published previous log file to topic {send_topic_log}")
 
 # *********************************************
 # Reading timestamps
