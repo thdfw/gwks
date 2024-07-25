@@ -104,6 +104,7 @@ if log_file_exists:
 # *********************************************
 
 latest = 0
+count_hall_ticks = 0
 
 def pulse_callback(pin):
     """
@@ -117,6 +118,12 @@ def pulse_callback(pin):
     if timestamp - latest > 1_000_000 * deadband_milliseconds:
         latest = timestamp
         client.publish(send_topic_tick , f"{timestamp}")
+
+        count_hall_ticks += 1
+        if count_hall_ticks > 10:
+            with open('ticks.csv', 'w') as file:
+                file.write(f'{timestamp}\n')
+            count_hall_ticks = 0
 
 # Set up the pin for input and attach interrupt for falling edge
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
