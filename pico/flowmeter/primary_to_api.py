@@ -27,7 +27,7 @@ base_url = "http://192.168.0.165:8000"
 
 HB_FREQUENCY_S = 3
 PULSE_PIN = 28
-DEADMAND_MILLISECONDS = 10
+DEADBAND_MILLISECONDS = 100
 
 
 # Connect to wifi
@@ -61,7 +61,7 @@ def pulse_callback(pin):
     """
     global latest
     timestamp = utime.time_ns()
-    if timestamp - latest > 1_000_000 * DEADMAND_MILLISECONDS:
+    if timestamp - latest > 1_000_000 * DEADBAND_MILLISECONDS:
         latest = timestamp
         url = base_url + "/primary-flow/tick"
         payload = {'timestamp_ns': timestamp}
