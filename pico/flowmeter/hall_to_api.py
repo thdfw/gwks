@@ -1,5 +1,5 @@
 """
-commit XXXXXX of https://github.com/thdfw/gwks/pico/flowmeter/hall_to_api.py
+commit 669b96ad of https://github.com/thdfw/gwks/pico/flowmeter/hall_to_api.py
 This code looks for a rest API over wifi
 
 Instructions: run ./start_api.sh from https://github.com/thegridelectric/starter-scripts/tree/jm/nodename
@@ -20,13 +20,12 @@ import utime
 # PARAMETERS
 # *********************************************
 wifi_name = "SSID"
-wifi_password = "PASS"
+wifi_password = "PASSWD"
 
-base_url = "http://192.168.0.165:8000"
+base_url = "http://192.168.0.175:8000"
 
 HB_FREQUENCY_S = 3
 PULSE_PIN = 28
-DEADMAND_MILLISECONDS = 10
 
 
 # Connect to wifi
@@ -52,23 +51,22 @@ def pulse_callback(pin):
     """
     global latest
     timestamp = utime.time_ns()
-    if timestamp - latest > 1_000_000 * DEADMAND_MILLISECONDS:
-        frequency = int(1/(timestamp-latest)*1e9 * 1e6)
-        latest = timestamp
-        url = base_url + "/dist-flow/hz"
-        payload = {'MicroHz': frequency}
-        headers = {'Content-Type': 'application/json'}
-        json_payload = ujson.dumps(payload)
-        try:
-            response = urequests.post(url, data=json_payload, headers=headers)
-            response.close()
-        except Exception as e:
-            print(f"Error posting tick: {e}")
-        gc.collect()
+    frequency = int(1/(timestamp-latest)*1e9 * 1e6)
+    latest = timestamp
+    url = base_url + "/dist-flow/hz"
+    payload = {'MicroHz': frequency}
+    headers = {'Content-Type': 'application/json'}
+    json_payload = ujson.dumps(payload)
+    try:
+        response = urequests.post(url, data=json_payload, headers=headers)
+        response.close()
+    except Exception as e:
+        print(f"Error posting tick: {e}")
+    gc.collect()
 
 
-pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
-pulse_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=pulse_callback)
+pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
+pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=pulse_callback)
 
 
 
