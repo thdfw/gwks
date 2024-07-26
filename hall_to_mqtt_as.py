@@ -55,10 +55,8 @@ receive_topic_hwuid = "scada/dist-flow/hw-uid-request"
 # Functions
 # *********************************************
 
-publish_id = False
-
 async def async_subscription_callback(topic, msg, retained):
-    print((topic, msg, retained))
+    # print((topic, msg, retained))
     if topic == receive_topic_hwuid:
         await client.publish(send_topic_hwuid, f'Pico unique ID: {pico_unique_id}', qos=1)
 
@@ -79,14 +77,10 @@ async def on_connect(client):
         print(f"Published previous log file to topic {send_topic_log}")
 
 async def main(client):
-    global publish_id
     await client.connect()
     print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
     while True:
         await asyncio.sleep(5)
-        #if publish_id:
-        #    await client.publish(send_topic_hwuid, f'Pico unique ID: {pico_unique_id}', qos=1)
-        #    publish_id = False
 
 # *********************************************
 # Connecting to MQTT
