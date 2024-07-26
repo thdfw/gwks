@@ -19,10 +19,10 @@ import utime
 # *********************************************
 # PARAMETERS
 # *********************************************
-wifi_name = "SSID"
+wifi_name = "ARRIS-3007"
 wifi_password = "PASS"
 
-base_url = "http://192.168.0.165:8000"
+base_url = "http://192.168.0.175:8000"
 
 
 HB_FREQUENCY_S = 3
