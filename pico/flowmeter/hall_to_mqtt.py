@@ -35,7 +35,7 @@ HB_FREQUENCY_S = 3
 
 send_topic_hb = b"dist-flow/hb"
 send_topic_tick = b"dist-flow/tick"
-send_topic_hwuid = b"dist-flow/scada/hw-uid-response"
+send_topic_hwuid = b"dist-flow/hw-uid-response"
 send_topic_log = b"dist-flow/log"
 
 receive_topic_hwuid = b"scada/dist-flow/hw-uid-request"

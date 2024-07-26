@@ -35,7 +35,7 @@ node_name = "dist-omega-flow"
 
 send_topic_hb = b"dist-omega-flow/hb"
 send_topic_tick = b"dist-omega-flow/tick"
-send_topic_hwuid = b"dist-omega-flow/scada/hw-uid-response"
+send_topic_hwuid = b"dist-omega-flow/hw-uid-response"
 send_topic_log = b"dist-omega-flow/log"
 
 receive_topic_hwuid = b"scada/dist-omega-flow/hw-uid-request"
