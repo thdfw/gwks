@@ -114,7 +114,7 @@ async def async_pulse_callback(pin):
     """
     global latest
     global count_hall_ticks
-
+    
     timestamp = utime.time_ns()
     latest = timestamp
     
