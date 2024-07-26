@@ -151,7 +151,6 @@ if log_file_exists:
 # *********************************************
 
 latest = 0
-count_hall_ticks = 0
 
 def pulse_callback(pin):
     """
@@ -171,11 +170,6 @@ def pulse_callback(pin):
             except Exception as e:
                 print(f"Failed to publish: {e}")
                 client_live = False
-        count_hall_ticks += 1
-        if count_hall_ticks > 10:
-            with open('ticks.csv', 'w') as file:
-                file.write(f'{timestamp}\n')
-            count_hall_ticks = 0
 
 # Set up the pin for input and attach interrupt for falling edge
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
