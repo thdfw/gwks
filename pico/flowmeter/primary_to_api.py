@@ -19,16 +19,16 @@ import utime
 # *********************************************
 # PARAMETERS
 # *********************************************
-wifi_name = "SSID"
+wifi_name = "ARRIS-3007"
 wifi_password = "PASS"
 
-base_url = "http://192.168.0.165:8000"
+base_url = "http://192.168.0.175:8000"
 
 
 HB_FREQUENCY_S = 3
 PULSE_PIN = 28
-DEADMAND_MILLISECONDS = 10
-
+DEADBAND_MILLISECONDS = 100
+HB_WAITS_AFTER_TICK_S = 30
 
 # Connect to wifi
 wlan = network.WLAN(network.STA_IF)
@@ -61,7 +61,7 @@ def pulse_callback(pin):
     """
     global latest
     timestamp = utime.time_ns()
-    if timestamp - latest > 1_000_000 * DEADMAND_MILLISECONDS:
+    if timestamp - latest > 1_000_000 * DEADBAND_MILLISECONDS:
         latest = timestamp
         url = base_url + "/primary-flow/tick"
         payload = {'timestamp_ns': timestamp}
@@ -98,12 +98,14 @@ def publish_heartbeat(timer):
     headers = {'Content-Type': 'application/json'}
     json_payload = ujson.dumps(payload)
     url = base_url + "/primary-flow/hb"
-    try:
-        response = urequests.post(url, data=json_payload, headers=headers)
-        response.close()
-    except Exception as e:
-        print(f"Error posting hb: {e}")
-    gc.collect()
+    timestamp = utime.time_ns()
+    if (timestamp - latest) / 10**9 > HB_WAITS_AFTER_TICK_S:
+        try:
+            response = urequests.post(url, data=json_payload, headers=headers)
+            response.close()
+        except Exception as e:
+            print(f"Error posting hb: {e}")
+        gc.collect()
 
 # Create a timer to publish heartbeat every 3 seconds
 heartbeat_timer = machine.Timer(-1)
