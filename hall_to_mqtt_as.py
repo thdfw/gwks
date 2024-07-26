@@ -22,7 +22,6 @@ import uasyncio
 MQTTClient.DEBUG = True
 
 # Create loops for async functions
-loop_pulse = uasyncio.get_event_loop()
 loop_heartbeat = uasyncio.get_event_loop()
 loop_id = uasyncio.get_event_loop()
 
@@ -30,15 +29,20 @@ loop_id = uasyncio.get_event_loop()
 # Parameters
 # *********************************************
 
-mqtt_broker = '198.128.218.15'
-wifi_name = 'lbnl-visitor'
-wifi_password = ''
+wifi_name = "ARRIS-3007"
+wifi_password = "ADD PASSWORD"
+
+mqtt_broker = "192.168.0.89"
+mqtt_username = ""
+mqtt_password = ""
 
 HB_FREQUENCY_S = 3
 PULSE_PIN = 28
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 client_name = f"pico_w_{str(pico_unique_id)[-6:]}"
+
+timestamps_to_send = []
 
 # *********************************************
 # Topics
@@ -77,10 +81,16 @@ async def on_connect(client):
         print(f"Published previous log file to topic {send_topic_log}")
 
 async def main(client):
+    global timestamps_to_send
     await client.connect()
     print(f"Connected to mqtt broker {mqtt_broker} as client {client_name}")
     while True:
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
+        timestamps = timestamps_to_send.copy()
+        timestamps_to_send.clear()
+        for timestamp in timestamps:
+            await client.publish(send_topic_tick, f"{timestamp}", qos=1)
+            
 
 # *********************************************
 # Connecting to MQTT
@@ -101,18 +111,18 @@ latest = 0
 count_hall_ticks = 0
 
 # Callback function to record the timestamp of each hall meter pulse
-async def async_pulse_callback(pin):
+def pulse_callback(pin):
     """
     Callback function to record the timestamp of each hall meter tick 
     and send by mqtt. Sends on topic dist-flow/tick
     """
     global latest
     global count_hall_ticks
+    global timestamps_to_send
     
     timestamp = utime.time_ns()
     latest = timestamp
-    
-    await client.publish(send_topic_tick, f"{timestamp}", qos=1)
+    timestamps_to_send.append(timestamp)
 
     count_hall_ticks += 1
     if count_hall_ticks > 1000:
@@ -120,13 +130,9 @@ async def async_pulse_callback(pin):
             file.write(f'{timestamp}\n')
         count_hall_ticks = 0
 
-def pulse_callback(pin):
-    loop_pulse.create_task(async_pulse_callback(pin))
-
 # Set up the pin for input and attach interrupt for rising edge
 hall_pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
 hall_pulse_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=pulse_callback)
-loop_pulse.run_forever()
 
 # *********************************************
 # Publishing a Heartbeat
