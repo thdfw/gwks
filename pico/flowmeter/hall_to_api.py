@@ -20,7 +20,7 @@ import utime
 # PARAMETERS
 # *********************************************
 wifi_name = "ARRIS-3007"
-wifi_password = "cheat.159.partial"
+wifi_password = "PASSWD"
 
 base_url = "http://192.168.0.175:8000"
 
