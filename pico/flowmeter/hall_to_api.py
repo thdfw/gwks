@@ -19,7 +19,7 @@ import utime
 # *********************************************
 # PARAMETERS
 # *********************************************
-wifi_name = "SSID"
+wifi_name = "ARRIS-3007"
 wifi_password = "cheat.159.partial"
 
 base_url = "http://192.168.0.175:8000"
@@ -61,7 +61,7 @@ def pulse_callback(pin):
     hz = 1e9/(timestamp-latest_ts)
     exp_hz = ALPHA * hz + (1 - ALPHA) * exp_hz
     latest_ts = timestamp
-    if (0 < exp_hz  - prev_published_hz < HZ_THRESHOLD) or (0 < prev_published_hz - exp_hz < HZ_THRESHOLD):
+    if (0 <= exp_hz  - prev_published_hz < HZ_THRESHOLD) or (0 < prev_published_hz - exp_hz < HZ_THRESHOLD):
         publish_new = True
     
 
