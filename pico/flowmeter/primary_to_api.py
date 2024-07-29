@@ -43,7 +43,7 @@ print(f"Connected to wifi {wifi_name}")
 
 # Publish a first timestamp
 url = base_url + "/primary-flow/tick"
-payload = {'timestamp_ns': utime.time_ns()}
+payload = {'TimestampNs': utime.time_ns(), "TypeName": "tick", "Version": "000"}
 headers = {'Content-Type': 'application/json'}
 json_payload = ujson.dumps(payload)
 response = urequests.post(url, data=json_payload, headers=headers)
@@ -64,7 +64,7 @@ def pulse_callback(pin):
     if timestamp - latest > 1_000_000 * DEADBAND_MILLISECONDS:
         latest = timestamp
         url = base_url + "/primary-flow/tick"
-        payload = {'timestamp_ns': timestamp}
+        payload = {'TimestampNs': timestamp, "TypeName": "tick", "Version": "000"}
         headers = {'Content-Type': 'application/json'}
         json_payload = ujson.dumps(payload)
         try:

@@ -47,12 +47,12 @@ receive_topic_hwuid = b"scada/dist-omega-flow/hw-uid-request"
 
 
 wifi_name = "ARRIS-3007"
-wifi_password = "cheat.159.partial"
+wifi_password = "PASSWD"
 
 # Address for beech2 in somerset
 mqtt_broker = "192.168.0.175"
 mqtt_username = "sara"
-mqtt_password = "orca2026"
+mqtt_password = "PASSWD"
 mqtt_port = 1883
 
 pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()

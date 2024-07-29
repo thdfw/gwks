@@ -1,17 +1,8 @@
-"""
-commit d3808574 of https://github.com/thdfw/gwks/pico/flowmeter/hall_to_api.py
-This code looks for a rest API over wifi
-
-Instructions: run ./start_api.sh from https://github.com/thegridelectric/starter-scripts/tree/jm/nodename
-on a pi whose ip address is base_url below
-
-"""
 import gc
 import time
 
 import machine
 import network
-import ubinascii
 import ujson
 import urequests
 import utime
@@ -20,14 +11,15 @@ import utime
 # PARAMETERS
 # *********************************************
 wifi_name = "ARRIS-3007"
-wifi_password = "PASSWD"
+wifi_password = "PASS"
 
 base_url = "http://192.168.0.175:8000"
 
 HB_FREQUENCY_S = 3
 PULSE_PIN = 28
 ALPHA = .1
-HZ_THRESHOLD = .4
+HZ_THRESHOLD = 1
+PUBLISH_STAMPS_PERIOD_S = 10
 
 # Connect to wifi
 wlan = network.WLAN(network.STA_IF)
@@ -43,26 +35,35 @@ print(f"Connected to wifi {wifi_name}")
 # *********************************************
 # Catch pulses
 # *********************************************
-latest_ts = 0
-exp_hz = 0
+latest_ts = None
+exp_hz = None
 prev_published_hz = 0
 publish_new = False
+timestamps = []
+publishing_list = False
+last_tick = utime.time_ns()
 
 def pulse_callback(pin):
-    """
-    Callback function to record the current frequency at each tick 
-    and post to /dist-flow/hz
-    """
-    global latest_ts
-    global exp_hz
-    global publish_new
-    global prev_published_hz
-    timestamp = utime.time_ns()
-    hz = 1e9/(timestamp-latest_ts)
-    exp_hz = ALPHA * hz + (1 - ALPHA) * exp_hz
-    latest_ts = timestamp
-    if (0 <= exp_hz  - prev_published_hz < HZ_THRESHOLD) or (0 < prev_published_hz - exp_hz < HZ_THRESHOLD):
-        publish_new = True
+    global publishing_list, latest_ts, exp_hz, publish_new, prev_published_hz, timestamps, last_tick
+    if not publishing_list:
+        if latest_ts is None:
+            latest_ts = utime.time_ns()
+            timestamps.append(timestamp)
+        else:
+            timestamp = utime.time_ns()
+            timestamps.append(timestamp)
+            hz = 1e9/(timestamp-latest_ts)
+            if exp_hz is None:
+                exp_hz = hz
+            else:
+                exp_hz = ALPHA * hz + (1 - ALPHA) * exp_hz
+            
+            latest_ts = timestamp
+            last_tick = timestamp
+            if abs(exp_hz  - prev_published_hz) >= HZ_THRESHOLD:
+                # print(f"prev_published was {prev_published_hz}")
+                # print(f"now is {exp_hz}")
+                publish_new = True
     
 
 pulse_pin = machine.Pin(PULSE_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
@@ -73,7 +74,7 @@ def publish_hz():
     global prev_published_hz
     global publish_new
     url = base_url + "/dist-flow/hz"
-    payload = {'MicroHz': int(exp_hz * 1e6)}
+    payload = {'MilliHz': int(exp_hz * 1e3), "TypeName": "hz", "Version": "000"}
     headers = {'Content-Type': 'application/json'}
     json_payload = ujson.dumps(payload)
     try:
@@ -86,6 +87,19 @@ def publish_hz():
     prev_published_hz = exp_hz
 
 
+def publish_ticklist():
+    global timestamps
+    url = base_url + "/dist-flow/ticklist"
+    payload = {'TimestampNsList': timestamps, "TypeName": "ticklist", "Version": "000"}
+    headers = {'Content-Type': 'application/json'}
+    json_payload = ujson.dumps(payload)
+    try:
+        response = urequests.post(url, data=json_payload, headers=headers)
+        response.close()
+    except Exception as e:
+        print(f"Error posting hz: {e}")
+    gc.collect()
+    timestamps = []
 # *********************************************
 # Publish Heartbeat
 # *********************************************
@@ -98,7 +112,7 @@ def publish_heartbeat(timer):
     Acts as a keepalive
     """
     global hb
-    global latest_ts
+    global last_tick
     hb = (hb + 1) % 16
     hbstr = "{:x}".format(hb)
     payload =  {'MyHex': hbstr, 'TypeName': 'hb', 'Version': '000'}
@@ -106,7 +120,7 @@ def publish_heartbeat(timer):
     json_payload = ujson.dumps(payload)
     url = base_url + "/dist-flow/hb"
     timestamp = utime.time_ns()
-    if (timestamp - latest_ts) / 10**9 > HB_FREQUENCY_S:
+    if (timestamp - last_tick) / 10**9 > HB_FREQUENCY_S:
         try:
             response = urequests.post(url, data=json_payload, headers=headers)
             response.close()
@@ -118,10 +132,17 @@ def publish_heartbeat(timer):
 heartbeat_timer = machine.Timer(-1)
 heartbeat_timer.init(period=3000, mode=machine.Timer.PERIODIC, callback=publish_heartbeat)
 
+last_ticks_sent = utime.time()
 try:
     while True:
         utime.sleep(.2)
         if publish_new:
             publish_hz()
+        if utime.time() - last_ticks_sent > PUBLISH_STAMPS_PERIOD_S:
+            publishing_list = True
+            publish_ticklist()
+            latest_ts = None
+            publishing_list = False
+            last_ticks_sent = utime.time()
 except KeyboardInterrupt:
     print("Program interrupted by user")
