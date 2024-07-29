@@ -123,6 +123,10 @@ def connect_mqtt():
             client.connect()
             client.subscribe(receive_topic_hwuid)
             client_live = True
+            try:
+                uos.remove('mqtt.log')
+            except Exception as e:
+                pass
             write_in_log("MQTT client connected")
         except Exception as e:
             write_in_log(f"Failed to connect to MQTT broker: {e}")
