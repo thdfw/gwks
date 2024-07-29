@@ -107,6 +107,10 @@ def write_in_log(error_message):
 # Connecting to WiFi 
 # *********************************************
 
+def sub_callback(topic, msg):
+    if topic==receive_topic_hwuid:
+        client.publish(send_topic_hwuid, f'Pico unique ID: {pico_unique_id}')
+
 def connect_mqtt():
     global client_live
     global client
@@ -115,6 +119,7 @@ def connect_mqtt():
             disconnect_mqtt()
         try:
             client = MQTTClient(client_name, mqtt_broker, user=mqtt_username, password=mqtt_password, port=mqtt_port)
+            client.set_callback(sub_callback)
             client.connect()
             client.subscribe(receive_topic_hwuid)
             client_live = True
@@ -138,6 +143,7 @@ def disconnect_mqtt():
         client = None  # Ensure the client object is cleared
 
 # Publish a first timestamp
+client = None
 connect_mqtt()
 client.publish(send_topic_tick, f"Calibration timestamp from {client_name}: {utime.time_ns()}")
 
@@ -187,6 +193,7 @@ def publish_heartbeat(timer):
     """
     global hb
     global latest
+    global client_live
     hb = (hb + 1) % 16
     hbstr = "{:x}".format(hb)
     msg =  {'MyHex': hbstr, 'TypeName': 'hb', 'Version': '000'}
