@@ -1,6 +1,6 @@
 """
-This code reads MQTT messages on the topics 'hall_sensor' and 'ekm_sensor'
-and saves them as timestamped rows in a CSV file in /home/pi/mqtt_files/
+This code is designed to run on a Pi. It reads MQTT messages on the topics 'hall_sensor' 
+and 'ekm_sensor' and saves them as timestamped rows in a CSV file in /home/pi/mqtt_files/
 
 Instructions: 
 - If using mosquitto 2.0, place the provided .conf file in /etc/mosquitto/, or similar
