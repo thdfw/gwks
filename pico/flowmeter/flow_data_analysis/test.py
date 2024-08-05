@@ -20,8 +20,7 @@ for _, __, files in os.walk(files_dir):
         df2['time_sec'] = (df2['time']-df2.time[0])/1e9/60
 
         plt.plot(df.time_sec, df.frequency, color='tab:grey', alpha=0.3, label='Raw exp weighted average')
-        plt.plot(df2.time_sec, df2.frequency, '-x', alpha=0.5, color='red', label='Filtered and collected')
-        print(len(df2))
+        plt.plot(df2.time_sec, df2.frequency, '-x', alpha=0.5, color='red', label='Filtered and recorded ticklist')
         plt.title(f'From {int(len(df)/(list(df.time_sec)[-1]*60))} to {round(len(df2)/int(list(df2.time_sec)[-1]*60),2)} points/second')
         plt.xlabel('time [min]')
         plt.ylabel('frequency [hz]')
