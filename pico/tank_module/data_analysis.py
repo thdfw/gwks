@@ -3,12 +3,12 @@ import time
 file_name = "res_5_5_take_1.csv"
 header = "1000 readings with 10 kOhm voltage divider and 5.55 kOhm NTC stand-in\n"
 # Define the ADC pin
-adc = machine.ADC(26)
+adc0 = machine.ADC(26)
 
 # Function to read the voltage from ADC0
 def read_voltage():
     # Read the raw ADC value (0-65535)
-    adc_value = adc.read_u16()
+    adc_value = adc0.read_u16()
     # Convert the raw value to a voltage
     # The reference voltage (Vref) is typically 3.3V on the Pico
     voltage = (adc_value / 65535) * 3.3
@@ -18,7 +18,7 @@ def read_voltage():
 def test(samples=1000):
     readings = []
     for _ in range(samples):
-        readings.append(adc.read_u16())
+        readings.append(adc0.read_u16())
     return readings
 
 readings = test()
