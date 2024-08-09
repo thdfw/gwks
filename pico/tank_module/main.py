@@ -62,7 +62,7 @@ class TmPico:
         readings = []
         for _ in range(self.samples):
             # Read the raw ADC value (0-65535)
-            readings.append(self.adc0.read_u16())
+            readings.append(self.adc1.read_u16())
         voltages = list(map(lambda x: x * 3.3 / 65535, readings))
         return int(10**6 * sum(voltages) / self.samples)
 
