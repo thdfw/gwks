@@ -218,7 +218,7 @@ class TankModule:
         self.sync_report_timer.init(
             period=self.capture_period_s * 1000, 
             mode=machine.Timer.PERIODIC,
-            #callback=self.sync_post_microvolts
+            callback=self.sync_post_microvolts
         )
         self.mv0 = self.adc0_micros()
         self.mv1 = self.adc1_micros()
