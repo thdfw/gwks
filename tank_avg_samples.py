@@ -40,8 +40,6 @@ class TankModule:
         self.mv0 = None
         self.mv1 = None
         self.node_names = []
-        self.sample0_averages = []
-        self.sample1_averages = []
 
         self.sync_report_timer = machine.Timer(-1)
                                                                  
@@ -169,36 +167,28 @@ class TankModule:
             print(f"Error posting hz: {e}")
 
     def adc0_micros(self):
-        readings = []
-        for _ in range(self.samples):
-            # Read the raw ADC value (0-65535)
-            readings.append(self.adc0.read_u16())
-        voltages = list(map(lambda x: x * 3.3 / 65535, readings))
-        mean_1000 = int(10**6 * sum(voltages) / self.samples)
-        self.sample0_averages.append(mean_1000)
-        if len(self.sample0_averages) >= self.num_sample_averages:
-            print(self.sample0_averages)
-            avg = sum(self.sample0_averages)/self.num_sample_averages
-            self.sample0_averages = []
-            return avg
-        else:
-            return 0
+        sample_averages = []
+        for _ in range(self.num_sample_averages):
+            readings = []
+            for _ in range(self.samples):
+                # Read the raw ADC value (0-65535)
+                readings.append(self.adc0.read_u16())
+            voltages = list(map(lambda x: x * 3.3 / 65535, readings))
+            mean_1000 = int(10**6 * sum(voltages) / self.samples)
+            sample_averages.append(mean_1000)
+        return sum(sample_averages)/self.num_sample_averages
     
     def adc1_micros(self):
-        readings = []
-        for _ in range(self.samples):
-            # Read the raw ADC value (0-65535)
-            readings.append(self.adc1.read_u16())
-        voltages = list(map(lambda x: x * 3.3 / 65535, readings))
-        mean_1000 = int(10**6 * sum(voltages) / self.samples)
-        self.sample1_averages.append(mean_1000)
-        if len(self.sample1_averages) >= self.num_sample_averages:
-            print(self.sample1_averages)
-            avg = sum(self.sample1_averages)/self.num_sample_averages
-            self.sample1_averages = []
-            return avg
-        else:
-            return 0
+        sample_averages = []
+        for _ in range(self.num_sample_averages):
+            readings = []
+            for _ in range(self.samples):
+                # Read the raw ADC value (0-65535)
+                readings.append(self.adc1.read_u16())
+            voltages = list(map(lambda x: x * 3.3 / 65535, readings))
+            mean_1000 = int(10**6 * sum(voltages) / self.samples)
+            sample_averages.append(mean_1000)
+        return sum(sample_averages)/self.num_sample_averages
     
     def sync_post_microvolts(self, timer):
         print("In timer")
@@ -228,22 +218,19 @@ class TankModule:
         self.sync_report_timer.init(
             period=self.capture_period_s * 1000, 
             mode=machine.Timer.PERIODIC,
-            callback=self.sync_post_microvolts
+            #callback=self.sync_post_microvolts
         )
         self.mv0 = self.adc0_micros()
         self.mv1 = self.adc1_micros()
         while True:
             self.mv0 = self.adc0_micros()
             self.mv1 = self.adc1_micros()
-
-            if self.mv0 > 0:
-                if abs(self.mv0 - self.prev_mv0) > self.async_capture_delta_micro_volts:
-                    self.async_post_microvolts(idx = 0)
-                    self.prev_mv0 = self.mv0
-            if self.mv1 > 0:
-                if abs(self.mv1 - self.prev_mv1) > self.async_capture_delta_micro_volts:
-                    self.async_post_microvolts(idx = 1)
-                    self.prev_mv1 = self.mv1
+            if abs(self.mv0 - self.prev_mv0) > self.async_capture_delta_micro_volts:
+                self.async_post_microvolts(idx = 0)
+                self.prev_mv0 = self.mv0
+            if abs(self.mv1 - self.prev_mv1) > self.async_capture_delta_micro_volts:
+                self.async_post_microvolts(idx = 1)
+                self.prev_mv1 = self.mv1
             utime.sleep_ms(100)
 
 
