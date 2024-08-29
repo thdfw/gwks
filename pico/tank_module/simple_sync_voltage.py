@@ -2,12 +2,15 @@ import machine
 import utime
 import utime
 import uio
+import ubinascii
 
 ADC0_PIN_NUMBER = 26
 ADC1_PIN_NUMBER = 27
 DEFAULT_CAPTURE_PERIOD_S = 10
 DEFAULT_EXPERIENCE_TIME_S = 30*60
 DEFAULT_SAMPLES = 1000
+
+pico_unique_id = ubinascii.hexlify(machine.unique_id()).decode()
 
 class TankModule:
     def __init__(self):
@@ -57,7 +60,7 @@ class TankModule:
         self.num_recorded += 1
 
     def save_in_csv(self):
-        with uio.open(f'mV_data_{utime.time()}.csv', 'w') as f:
+        with uio.open(f'{pico_unique_id}.csv', 'w') as f:
             f.write('adc0,adc1,difference\n')
             for i in range(len(self.list0)):
                 row = f"{self.list0[i]},{self.list1[i]},{self.list_diff[i]}\n"
